@@ -16,3 +16,7 @@ find_package(Eigen3 CONFIG REQUIRED)
 add_executable(imu_nav_app src/main.cpp)
 
 target_link_libraries(imu_nav_app PRIVATE Eigen3::Eigen)
+target_include_directories(imu_nav_app 
+    PRIVATE 
+    ${PROJECT_SOURCE_DIR}/include
+)
