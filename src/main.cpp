@@ -1,26 +1,32 @@
-
-#include "imu_nav/imu_sample.hpp"
+#include "imu_nav/ideal_imu_simulator.hpp"
 
 #include <Eigen/Core>
 #include <iostream>
+#include <format>
+#include <numbers>
 
+constexpr double rad_to_deg =
+    180.0 / std::numbers::pi_v<double>;
 
 int main()
 {
+    imu_nav::IdealImuSimulationConfig config{};
+    const auto simulation_samples = imu_nav::simulate_ideal_z_rotation(config);
 
-    const imu_nav::ImuSample sample {
-        .timestamp_s = 2.0,
-        .gyroscope_rad_s = {0.0, 0.0, 0.1571},
-        .accelerometer_m_s2 = {0.0, 0.0, 9.81},
-        .magnetometer_t = {20e-6, 0.0, -45e-6}
-    };
+    const auto& specific_sample = simulation_samples.at(700);
 
+    const auto rot_matrix = specific_sample.true_orientation.toRotationMatrix();
 
-    const Eigen::Vector3d gyroscope_rad_sec {0.0,0.0, 0.1571};
+    const auto euler_zyx  = rot_matrix.canonicalEulerAngles(2,1,0);
+    const double yaw_rad   = euler_zyx(0);
+    const double pitch_rad = euler_zyx(1);
+    const double roll_rad  = euler_zyx(2);
 
+    std::cout << std::format("Sample count: {}\n",simulation_samples.size());
+    std::cout << std::format("Timestamp: {:.0f} s\n",specific_sample.imu_sample.timestamp_s);
+    std::cout << std::format("Roll: {:.0f} deg\n",roll_rad*rad_to_deg);
+    std::cout << std::format("Pitch: {:.0f} deg\n",pitch_rad*rad_to_deg);
+    std::cout << std::format("Yaw: {:.0f} deg\n",yaw_rad*rad_to_deg);
 
-
-    std::cout << "Gyroscope [rad/s]: "
-              << sample.gyroscope_rad_s.transpose() << '\n';
 
 }
